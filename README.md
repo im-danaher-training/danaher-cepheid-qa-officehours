@@ -198,6 +198,74 @@ Suggested skills for this repository:
 
 ---
 
+## 🧭 Step-by-Step: Building This Repository With Copilot
+
+This repository starts as **README-only**. Everything below — the automation framework and every Copilot customization — is what you will create, in order, using Copilot in IntelliJ. Follow these steps in sequence; each one builds on the last.
+
+### Step 1 — Scaffold the automation project
+1. In IntelliJ, create a new Maven module (Java 17) with Selenium WebDriver 4.x and TestNG dependencies.
+2. Ask Copilot Chat to scaffold the framework layers referenced in the Architecture section:
+   ```
+   Role: QA automation architect
+   Task: Scaffold DriverFactory, BaseTest, and an empty pages/ package for Page Objects
+   Constraints: WebDriver per-thread (ThreadLocal), explicit waits only, no Thread.sleep
+   Output: class stubs only, no test logic yet
+   ```
+3. Review the generated `DriverFactory`/`BaseTest` before accepting — confirm there is no shared mutable `WebDriver` state (this matters later for Phase 8, parallel execution).
+4. Add a `src/test/resources/testng.xml` referencing an empty `<classes>` block for now.
+
+### Step 2 — Point the framework at the application under test
+1. Confirm (or coordinate with the developer office-hours track) that `instrument-care-ui`/`instrument-care-api` are running locally.
+2. Create a `config.properties` (or similar) holding the base URL and default timeout — never hardcode the URL inside a test class.
+3. Ask Copilot to generate a small `TestConfig` helper that reads this file, and review it for hardcoded fallbacks before accepting.
+
+### Step 3 — Create the repository instructions
+1. Create `.github/instructions/copilot-instructions.md`.
+2. Ask Copilot Chat to draft it from the rules already listed in this README:
+   ```
+   Role: QA lead defining team-wide Copilot rules for this automation repo
+   Task: Turn the "Instructions" rules list in README.md into a copilot-instructions.md file
+   Constraints: durable QA conventions only (POM, explicit waits, no secrets), under 30 lines
+   Output: the instructions file content
+   ```
+3. Test it: ask Copilot to generate a quick test with a hardcoded wait and confirm it now avoids `Thread.sleep()` or flags it.
+
+### Step 4 — Create your first prompt file
+1. Create `.github/prompts/test-plan-prompt.md` using the Role/Task/Constraints/Output pattern used throughout this README:
+   ```markdown
+   # Test plan prompt
+
+   Use this at the start of testing any new feature.
+
+   ```
+   Role: QA test planner
+   Task: Produce a risk-based test plan (functional, negative, boundary, regression) for <feature>
+   Constraints: prioritize by business risk; note which scenarios are automatable now
+   Output: prioritized scenario list grouped by category
+   ```
+   ```
+2. Repeat Step 4 for at least one more prompt file (e.g., `regression-debugging-prompt.md`).
+3. Use both prompt files for real in Phase 2 and Phase 6 below and confirm they save you from retyping context.
+
+### Step 5 — Design and create a custom agent
+1. Pick one suggested agent (start with **Test Automation Agent**).
+2. Before writing the file, design it: what fixed steps must it always perform (e.g., read approved test case → identify/extend Page Object → write test → run it → report result)?
+3. Create `.github/agents/test-automation-agent.agent.md` describing the persona, its fixed step sequence, and any constraints (e.g., "never commit a test with a `Thread.sleep()`").
+4. Invoke the agent on one approved test case from Phase 3 first, before relying on it for the full Phase 5 automation set.
+
+### Step 6 — Create a reusable skill
+1. Pick one suggested skill (start with **Selenium automation**).
+2. Create `.github/skills/selenium-automation/SKILL.md` describing: when it applies, the Page Object conventions to follow, and a short example Page Object method that follows them.
+3. Reference the skill explicitly in a Copilot Chat prompt during Phase 5 and confirm the generated Page Objects follow its conventions.
+
+### Step 7 — (Optional) Add a root `AGENTS.md`
+1. Create a root `AGENTS.md` summarizing: how to run the suite (`mvn test -Dbrowser=chrome`), where Page Objects live, and where the `.github/` customization files are.
+2. Ask Copilot to draft a first version from your `pom.xml` and `.github/instructions/copilot-instructions.md`, then edit it for accuracy.
+
+By the end of Step 7 you should have used **all four customization types** (instructions, prompt files, agents, skills) at least once — this is the fastest path to becoming genuinely proficient with Copilot customization, not just Copilot autocomplete.
+
+---
+
 # 🧪 QA Office Hours — Hands-on Phases
 
 ## Phase 1 — Understand the Application
